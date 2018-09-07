@@ -41,14 +41,21 @@ Eigen::MatrixXd load_data(const string& filename, bool normalize=true) {
 
     // 画像の画素データを読む
     unsigned char* buf = new unsigned char[rows * cols];
-    Eigen::MatrixXd ret(rows * cols, nimg);
+    Eigen::MatrixXd ret(nimg, rows * cols);
     const double div = normalize ? 255.0 : 1.0;
+    for (int i = 0; i < nimg; i++) {
+        ifs.read((char*)buf, sizeof(char) * rows * cols);
+        for (int j = 0; j < rows * cols; j++) {
+            ret(i, j) = buf[i] / div;
+        }
+    }
+    /*Eigen::MatrixXd ret(rows * cols, nimg);
     for (int j = 0; j < nimg; j++) {
         ifs.read((char*)buf, sizeof(char) * rows * cols);
         for (int i = 0; i < rows * cols; i++) {
             ret(i, j) = buf[i] / div;
         }
-    }
+    }*/
     delete[] buf;
 
     ifs.close();
@@ -71,12 +78,18 @@ Eigen::MatrixXd load_label(const string& filename) {
     int nimg = big_endian(b);
 
     // ラベルのデータを読む
-    Eigen::MatrixXd ret(10, nimg);
+    Eigen::MatrixXd ret(nimg, 10);
+    for (int i = 0; i < nimg; i++) {
+        char digit;
+        ifs.read((char*)&digit, sizeof(char));
+        ret(i, digit) = 1.0;
+    }
+    /*Eigen::MatrixXd ret(10, nimg);
     for (int i = 0; i < nimg; i++) {
         char digit;
         ifs.read((char*)&digit, sizeof(char));
         ret(digit, i) = 1.0;
-    }
+    }*/
 
     ifs.close();
 
@@ -84,7 +97,7 @@ Eigen::MatrixXd load_label(const string& filename) {
 }
 
 /** トレーニング用画像の読み取り */
-Eigen::MatrixXd train_data(bool normalize=true) {
+Eigen::MatrixXd train_data(bool normalize) {
     return move(load_data(train_image_file, normalize));
 }
 
@@ -94,7 +107,7 @@ Eigen::MatrixXd train_label() {
 }
 
 /** テスト用画像の読み取り */
-Eigen::MatrixXd test_data(bool normalize=true) {
+Eigen::MatrixXd test_data(bool normalize) {
     return move(load_data(test_image_file, normalize));
 }
 

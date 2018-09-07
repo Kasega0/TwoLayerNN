@@ -5,13 +5,13 @@
 #include <Eigen/Dense>
 
 /** トレーニング用の画像を読み込む */
-Eigen::MatrixXd train_data(bool normalize);
+Eigen::MatrixXd train_data(bool normalize=true);
 
 /** トレーニング用のラベルを読み込む */
 Eigen::MatrixXd train_label();
 
 /** テスト用の画像を読み込む */
-Eigen::MatrixXd test_data(bool normalize);
+Eigen::MatrixXd test_data(bool normalize=true);
 
 /** テスト用のラベルを読み込む */
 Eigen::MatrixXd test_label();
