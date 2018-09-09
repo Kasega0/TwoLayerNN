@@ -28,16 +28,16 @@ int main() {
     MatrixXd t_train = train_label();
 
     //ハイパーパラメタ
-    const int iters_num = 10000; //繰り返し回数
+    const int iters_num = 100; //繰り返し回数
     const int train_size = x_train.rows();
-    const int batch_size = 100; //一度のサンプル数
+    const int batch_size = 20; //一度のサンプル数
     const double learnign_rate = 0.1;
 
     int *values = new int[train_size];
     for (int i = 0; i < train_size; i++) { values[i]=i; }
     //for (int i = 0; i < batch_size; i++) { batch_mask[i]=i; }
 
-    TwoLayerNet network = TwoLayerNet(x_train.cols(), 50, 10, batch_size, learnign_rate);
+    TwoLayerNet network = TwoLayerNet(x_train.cols(), 10, 10, batch_size, learnign_rate);
 
     MatrixXd x_batch= MatrixXd::Zero(batch_size, x_train.cols());
     MatrixXd t_batch= MatrixXd::Zero(batch_size, t_train.cols());
@@ -76,11 +76,11 @@ int main() {
         train_loss_list[k] = loss;
     }
 
-    cout << train_loss_list[0] << " " << flush;
+    /*cout << train_loss_list[0] << " " << flush;
     for(int i=1; i<iters_num; ++i){
         cout << train_loss_list[i] << " " << flush;
         if(i%30==0) cout << "\n";
-    }
+    }*/
 
     const string filename = root_directory + "result_params.txt"; //directories.h
     fstream fs;
@@ -90,6 +90,9 @@ int main() {
     }
     for(int i=0; i<4; ++i){
         fs << "\"" << prm_name[i] << "\": " << network.mParams[prm_name[i]] << ',' << "\n";
+    }
+    for(int i=1; i<iters_num; ++i){
+        fs << "\"loss_" << i << "\": " << train_loss_list[i] << ',' << "\n";
     }
     fs.close();
 

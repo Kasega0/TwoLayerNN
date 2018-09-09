@@ -135,10 +135,13 @@ MatrixXd TwoLayerNet::Softmax(MatrixXd x){
 }
 
 double TwoLayerNet::CrossEntropyError(MatrixXd x, MatrixXd t) {
-    /*double cee = 0;
+    /*cout << "CrossEntropyError x rows: " << x.rows() << ", cols: " << x.cols() << "\n";
+    cout << "CrossEntropyError t rows: " << t.rows() << ", cols: " << t.cols() << "\n";*/
+    x=((MatrixXd)(x.array() + 1e-7)).array().log();
+    double tmp=0.0;
     for (int i=0; i<x.rows(); ++i) {
-        cee += log(x(i, t(i)) + 1e-7);
+        tmp += x.row(i).dot(t.row(i));
     }
-    return -cee / x.rows();*/
-    return -(t * (MatrixXd)((MatrixXd)(x.array() + 1e-7)).array().log()).sum() / x.rows();
+    return -tmp / x.rows();
+    //return -(t * (MatrixXd)((MatrixXd)(x.array() + 1e-7)).array().log()).sum() / x.rows();
 }
