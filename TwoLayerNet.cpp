@@ -8,11 +8,11 @@
 using namespace std;
 using namespace Eigen;
 
-TwoLayerNet::TwoLayerNet(int input_size, int hidden_size, int output_size, double weight_init_std) {
+TwoLayerNet::TwoLayerNet(int input_size, int hidden_size, int output_size, int batch_size, double weight_init_std) {
     MatrixXd W1(input_size, hidden_size);
-    MatrixXd b1 = MatrixXd::Zero(1, hidden_size);
+    MatrixXd b1 = MatrixXd::Zero(batch_size, hidden_size);
     MatrixXd W2(hidden_size, output_size);
-    MatrixXd b2 = MatrixXd::Zero(1, output_size);
+    MatrixXd b2 = MatrixXd::Zero(batch_size, output_size);
 
     random_device seed;
     mt19937 engine(seed()); // メルセンヌ・ツイスター法
@@ -34,16 +34,18 @@ TwoLayerNet::TwoLayerNet(int input_size, int hidden_size, int output_size, doubl
     mParams["b1"] = b1;
     mParams["b2"] = b2;
 
-    cout << "W1 rows: " << W1.rows() << ", cols: " << W1.cols() << "\n";
-    cout << "b1 rows: " << b1.rows() << ", cols: " << b1.cols() << "\n";
-    cout << "W2 rows: " << W2.rows() << ", cols: " << W2.cols() << "\n";
-    cout << "b2 rows: " << b2.rows() << ", cols: " << b2.cols() << "\n";
+    /*cout << "mParams[\"W1\"] rows: " << W1.rows() << ", cols: " << W1.cols() << "\n";
+    cout << "mParams[\"b1\"] rows: " << b1.rows() << ", cols: " << b1.cols() << "\n";
+    cout << "mParams[\"W2\"] rows: " << W2.rows() << ", cols: " << W2.cols() << "\n";
+    cout << "mParams[\"b2\"] rows: " << b2.rows() << ", cols: " << b2.cols() << "\n";*/
 }
 
 MatrixXd TwoLayerNet::Predict(MatrixXd x){
-    //cout << "Predict(x) rows: " << x.rows() << ", cols: " << x.cols() << "\n";
     MatrixXd W1 = mParams["W1"], W2 = mParams["W2"];
     MatrixXd b1 = mParams["b1"], b2 = mParams["b2"];
+    /*cout << "Predict x rows: " << x.rows() << ", cols: " << x.cols() << "\n";
+    cout << "Predict W1 rows: " << W1.rows() << ", cols: " << W1.cols() << "\n";
+    cout << "Predict b1 rows: " << b1.rows() << ", cols: " << b1.cols() << "\n";*/
 
     MatrixXd a1, z1, a2, y;
     a1 = x * W1 + b1;
@@ -76,14 +78,14 @@ map<string, MatrixXd> TwoLayerNet::NumericalGradient(MatrixXd x, MatrixXd t){
     function<double(MatrixXd, MatrixXd)> f = std::bind(&TwoLayerNet::Loss, this, placeholders::_1, placeholders::_2);
 
     map<string, MatrixXd> grads;
-    /*grads["W1"] = NumericalGradientSub(f, mParams["W1"], t);
-    grads["b1"] = NumericalGradientSub(f, mParams["b1"], t);
-    grads["W2"] = NumericalGradientSub(f, mParams["W2"], t);
-    grads["b2"] = NumericalGradientSub(f, mParams["b2"], t);*/
-    grads["W1"] = NumericalGradientSub(f, x, t);
+    /*grads["W1"] = NumericalGradientSub(f, x, t);
     grads["b1"] = NumericalGradientSub(f, x, t);
     grads["W2"] = NumericalGradientSub(f, x, t);
-    grads["b2"] = NumericalGradientSub(f, x, t);
+    grads["b2"] = NumericalGradientSub(f, x, t);*/
+    grads["W1"] = NumericalGradientSub2(f, x, t, "W1");
+    grads["b1"] = NumericalGradientSub2(f, x, t, "b1");
+    grads["W2"] = NumericalGradientSub2(f, x, t, "W2");
+    grads["b2"] = NumericalGradientSub2(f, x, t, "b2");
 
     return grads;
 }
@@ -96,6 +98,25 @@ MatrixXd TwoLayerNet::NumericalGradientSub(function<double(MatrixXd, MatrixXd)> 
     for (int i=0; i<x.rows(); ++i) {
         for (int j=0; j<x.cols(); ++j) {
             grad(i,j) = (f(x.array()+h,t) - f(x.array()-h,t)) / (2*h);
+        }
+    }
+
+    return grad;
+}
+
+MatrixXd TwoLayerNet::NumericalGradientSub2(function<double(MatrixXd, MatrixXd)> f, MatrixXd x, MatrixXd t, string str_param){
+    double h = 1e-4;
+    MatrixXd prm = mParams[str_param];
+    MatrixXd grad = MatrixXd::Zero(prm.rows(), prm.cols());
+
+    for (int i=0; i<grad.rows(); ++i) {
+        for (int j=0; j<grad.cols(); ++j) {
+            mParams[str_param](i,j) += h;
+            double f1 = f(x,t);
+            mParams[str_param](i,j) -= 2*h;
+            double f2 = f(x,t);
+            grad(i,j) = (f1-f2) / (2*h);
+            mParams[str_param](i,j) = prm(i,j);
         }
     }
 

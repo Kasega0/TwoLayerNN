@@ -17,9 +17,10 @@ private:
     Eigen::MatrixXd Softmax(Eigen::MatrixXd x);
     double CrossEntropyError(Eigen::MatrixXd x, Eigen::MatrixXd t);
     Eigen::MatrixXd NumericalGradientSub(std::function<double(Eigen::MatrixXd, Eigen::MatrixXd)> f, Eigen::MatrixXd x, Eigen::MatrixXd t);
+    Eigen::MatrixXd NumericalGradientSub2(std::function<double(Eigen::MatrixXd, Eigen::MatrixXd)> f, Eigen::MatrixXd x, Eigen::MatrixXd t, std::string str_param);
 
 public:
-    TwoLayerNet(int input_size, int hidden_size, int output_size, double weight_init_std=0.01);
+    TwoLayerNet(int input_size, int hidden_size, int output_size, int batch_size, double weight_init_std=0.01);
     Eigen::MatrixXd Predict(Eigen::MatrixXd x);
     double Loss(Eigen::MatrixXd x, Eigen::MatrixXd t);
     double Accuracy(Eigen::MatrixXd x, Eigen::MatrixXd t);
